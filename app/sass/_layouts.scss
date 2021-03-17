@@ -12,3 +12,11 @@
     padding-top: 50px;
   }
 }
+
+.section {
+  padding: 120px 0;
+
+  &--portfolio {
+    background-color: $primary-bg-color;
+  }
+}

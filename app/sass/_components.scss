@@ -17,3 +17,38 @@
     text-transform: uppercase;
   }
 }
+
+.portfolio {
+  padding-top: 70px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 50px 30px;
+
+  &__img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+  }
+
+  &__caption {
+    text-align: center;
+    background: #fff;
+    padding: 28px;
+
+    &--title {
+      font-size: 18px;
+      color: $main-font-color;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      margin-bottom: 5px;
+    }
+
+    &--subtitle {
+      font-size: 14px;
+      color: $secondary-font-color;
+      font-weight: 400;
+      font-style: italic;
+      font-family: 'EB Garamond', serif;
+    }
+  }
+}

@@ -6,44 +6,47 @@ const browserSync = require('browser-sync').create();
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
 const del = require('del');
-const htmlhint = require("gulp-htmlhint");
-const htmlmin = require('gulp-htmlmin');
 const zip = require('gulp-zip');
-const ghPages = require('gulp-gh-pages');
+const htmlmin = require('gulp-htmlmin');
+const htmllint = require('gulp-htmlhint');
 
+//////// DEVELOPMENT /////////
 function liveReload() {
   browserSync.init({
     server: './app'
   });
 
   gulp.watch('app/sass/*.scss', styles);
-  gulp.watch(['app/js/carousel.js'], scripts);
+  gulp.watch(['app/js/carousel.js'], script);
   gulp.watch('app/*.html').on('change', browserSync.reload)
 }
 
+
 function styles() {
-  return gulp.src('./app/sass/*.scss')
+  return gulp.src('./app/sass/*.scss', { allowEmpty: true })
     .pipe(sass())
-    .pipe(autoprefixer(['last 4 versions']))
+    .pipe(autoprefixer({
+      grid: 'autoplace'
+    }))
     .pipe(cleanCSS())
     .pipe(gulp.dest('./app/css'))
     .pipe(browserSync.stream())
 }
 
-function scripts() {
+function script() {
   return gulp.src([
         './node_modules/jquery/dist/jquery.min.js',
         './node_modules/slick-carousel/slick/slick.min.js',
-        './app/js/carousel.js'],
-        { allowEmpty: true })
-        .pipe(concat('main.min.js'))
+        './app/js/carousel.js'
+      ],
+      { allowEmpty: true })
+        .pipe(concat('script.min.js'))
         .pipe(uglify())
         .pipe(gulp.dest('./app/js'))
         .pipe(browserSync.stream())
-
 }
 
-
+/////// BUILD PROJECT ////////
 function buildCSS() {
   return gulp.src('./app/css/main.css')
         .pipe(gulp.dest('./build/css'))
@@ -51,51 +54,44 @@ function buildCSS() {
 
 function buildHTML() {
   return gulp.src('./app/*.html')
-        .pipe(htmlhint())
-        .pipe(htmlhint.reporter())
-        .pipe(htmlhint.failOnError())
-        .pipe(htmlmin({collapseWhitespace: true}))
+        .pipe(htmllint())
+        .pipe(htmllint.reporter())
+        .pipe(htmllint.failOnError())
+        .pipe(htmlmin(
+          { collapseWhitespace: true,
+            removeEmptyAttributes: true,
+            useShortDoctype: true,
+            removeComments: true
+          }))
         .pipe(gulp.dest('./build'))
 }
 
 function buildJS() {
-  return gulp.src('./app/js/main.min.js')
+  return gulp.src('./app/js/script.min.js')
         .pipe(gulp.dest('./build/js'))
 }
 
 function cleanUp() {
-  return del([
-    'build',
-]);
+  return del(['./build']);
 }
 
-function archive() {
-  return gulp.src('build/*')
-		.pipe(zip('build.zip'))
-		.pipe(gulp.dest('./'))
+function acrchive() {
+  return gulp.src('./build/*')
+    .pipe(zip('build.zip'))
+    .pipe(gulp.dest('./'))
 }
 
 function build() {
   return gulp.parallel(
     cleanUp,
-    buildCSS,
-    buildHTML,
-    buildJS,
-    archive
+    gulp.series(
+      buildCSS,
+      buildHTML,
+      buildJS,
+      acrchive
+    ),
   )
 }
 
-function deploy() {
-  return gulp.src('./build')
-    .pipe(ghPages({
-      remoteUrl: "https://github.com/AlexeyUsanin/gulp_practice.git",
-      branch: "master"
-    }));
-}
-
 exports.default = liveReload;
-
-
 exports.build = build();
-
-exports.deploy = deploy;
