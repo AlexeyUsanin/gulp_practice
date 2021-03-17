@@ -54,7 +54,9 @@ function buildCSS() {
 
 function buildHTML() {
   return gulp.src('./app/*.html')
-        .pipe(htmllint())
+        .pipe(htmllint({
+          'spec-char-escape': false
+        }))
         .pipe(htmllint.reporter())
         .pipe(htmllint.failOnError())
         .pipe(htmlmin(
